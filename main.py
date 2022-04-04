@@ -4,7 +4,7 @@
 # Set the IP here, make sure to incase it with quotes
 # Example: "ip": "pbptanarchy.tk"
 address = {
-    "ip": None,
+    "ip": "example.tk",
     "port": "19132" # 19132 is default
 }
 
@@ -46,19 +46,19 @@ def inputThread():
     run = True
 
     # Tell the user to press enter to stop the proxy and use BOLD text to tell the to not stop the program while the proxy is running
-    # Doing so will cause the port to be taken up and you will need to restart your device
+    # Doing so will cause the port to be taken up and you will need to kill the process.
     input("\nPress enter to stop the proxy\nDo \033[37;40;1mNOT\033[37;40;0m stop the program ")
 
-    # Assing False to run
+    # Assign False to run
     run = False
 
-    # Return
-    return
+    # Return none
+    return None
 
-# Big brain stuffs
+# Big brain stuff
 class Proxy:
 
-    # Define an __init__ function to fun the the class is called
+    # Define an __init__ function to run the the class is called
     def __init__(self):
 
         # Set the options
@@ -66,11 +66,11 @@ class Proxy:
             "src_addr": None,
             "src_port": 19132,
             "dst_port": 19133
-        };
+        }
 
-        # Some threading stuffs I don't understand
-        self.__running_lock = threading.Lock();
-        self.__running = 0;
+        # Prepares to lock the thread
+        self.__running_lock = threading.Lock()
+        self.__running = 0
 
     # Define a method to set variables in the class
     def set_option(self, name, value):
@@ -79,85 +79,85 @@ class Proxy:
         if name in self.__options:
 
             # Set the name of options to the value provided
-            self.__options[name] = value;
+            self.__options[name] = value
 
         # Else name is not in options
         else:
 
             # Raise an error
-            raise NameError(name);
+            raise NameError(name)
 
         # Return the options
-        return self.__options;
+        return self.__options
 
     # Define a method to get an option
     def get_options(self):
 
         # Return options
-        return self.__options;
+        return self.__options
 
     # Define a method to run
     def run(self):
 
-        # IDK what is going on here
-        self.__running_lock.acquire();
-        self.__running += 1;
-        self.__running_lock.release();
+        # Locks the thread, starts it and then unlocks it.
+        self.__running_lock.acquire()
+        self.__running += 1
+        self.__running_lock.release()
 
-        # Set the dst address
-        dst_addr = ("0.0.0.0", self.__options["dst_port"]);
+        # Set the destination address (the servers adress)
+        dst_addr = ("0.0.0.0", self.__options["dst_port"])
 
         # Try something that may cause an error
         try:
 
-            # Set proc address to the host address? Alvarito sure knows how to make people feel dumb :p
+            # Sets proc_addr to the ip of the server
             proc_addr = socket.gethostbyname_ex(self.__options["src_addr"])[2][0]
 
-        # Something went wrong
+        # The host name is invalid.
         except socket.gaierror:
 
             # Tell the user there was an error
-            print("Error: Invalid address.");
+            print("Error: Invalid address.")
 
             # Return
-            return 1;
+            return 1
 
-        # Set src address to proc addess and scr port from options
-        src_addr = (proc_addr, self.__options["src_port"]);
+        # Set src address to a tuple of (server-ip, server-port).
+        src_addr = (proc_addr, self.__options["src_port"])
 
-        # Set cliend address to None
-        client_addr = None;
+        # Set client address to None
+        client_addr = None 
 
-        # Fancy socket stuffs I don't understand
-        self.__socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP);
-        self.__socket.bind(dst_addr);
-        self.__socket.setblocking(False);
+        # Sets up the socket and connects it to the server.
+        self.__socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+        self.__socket.bind(dst_addr)
+        self.__socket.setblocking(False)
 
         # Repeat until the global variable run is not True, used to just run forever
         while run:
 
-            # I don't know what this does but it seems important
-            self.__running_lock.acquire();
-            condition = self.__running < 1;
-            self.__running_lock.release();
+            # Makes sure the thread isn't locked
+            self.__running_lock.acquire()
+            condition = self.__running < 1
+            self.__running_lock.release()
 
             # Check if condition is True
             if condition:
 
-                # End Loop
-                break;
+                # End Loop as the thread is locked
+                break
 
             # Try something else that may cause an error
             try:
 
                 # Assign data and addrress
-                data, addr = self.__socket.recvfrom(4096);
+                data, addr = self.__socket.recvfrom(4096)
 
                 # Check if addr is equal to scr addr
                 if addr == src_addr:
 
-                    # Send some data do the server, I think
-                    self.__socket.sendto(data, client_addr);
+                    # Send the data to the client
+                    self.__socket.sendto(data, client_addr)
 
                 # Else addr is not equal to scr addr
                 else:
@@ -166,10 +166,10 @@ class Proxy:
                     if client_addr is None or client_addr[0] == addr[0]:
 
                         # Set the client address to addr
-                        client_addr = addr;
+                        client_addr = addr
 
                         # Send some data to the server
-                        self.__socket.sendto(data, src_addr);
+                        self.__socket.sendto(data, src_addr)
 
             # An error has occured
             except:
@@ -178,24 +178,24 @@ class Proxy:
                 pass
 
         # Close the socket
-        self.__socket.close();
+        self.__socket.close()
 
         # Return
-        return 0;
+        return 0
 
     # Define a mothod to stop
     def stop(self):
 
         # Set some internal variables to some random network stuffs I still don't get
-        self.__running_lock.acquire();
-        self.__running -= 1;
-        self.__running_lock.release();
+        self.__running_lock.acquire()
+        self.__running -= 1
+        self.__running_lock.release()
 
         # Return
-        return 0;
+        return 0
 
 # Check if the IP is None
-if address["ip"] == None:
+if address["ip"] == "example.tk":
 
     # Set preset to False
     preset = False
@@ -227,11 +227,8 @@ else:
 # Check if preset is False
 if preset == False:
 
-    # Check if thr IP is None
-    if address["ip"] == None:
-
-        # Tell the user they don't have a preset and tell them how to set it using ansi text
-        print("No preset found: \033[34;40;5mOpen the file to set one\033[37;40;0m")
+    # Tell the user they don't have a preset and tell them how to set it using ansi colored text
+    print("No preset found: \033[34;40;5mOpen the file to set one\033[37;40;0m")
 
     # Set addresses to some inputed data
     address = {
@@ -240,7 +237,7 @@ if preset == False:
     }
 
     # Print a blank line
-    print("")
+    print()
 
     # Check if the port is empty
     if address["port"] == "":
@@ -256,24 +253,24 @@ args = [
     address["port"]
 ]
 
-proxy = Proxy();
-proxy.set_option("src_addr", args[1]);
+proxy = Proxy()
+proxy.set_option("src_addr", args[1])
 
 if len(args) > 2:
-    proxy.set_option("src_port", int(args[2]));
+    proxy.set_option("src_port", int(args[2]))
 
 if len(args) > 3:
-    proxy.set_option("dst_port", int(args[3]));
-    options = proxy.get_options();
+    proxy.set_option("dst_port", int(args[3]))
+    options = proxy.get_options()
 
-print(options["src_addr"] + ":" + str(options["src_port"]) + " --> 0.0.0.0:" + str(options["dst_port"]));
+print(options["src_addr"] + ":" + str(options["src_port"]) + " --> 0.0.0.0:" + str(options["dst_port"]))
 
 # Assign the inputThread to a variable
 wait = threading.Thread(target=inputThread)
 wait.start()
 
 try:
-    proxy.run();
+    proxy.run()
 
     # Wait until the input thread changes run to False
     while run == True:
@@ -283,12 +280,12 @@ try:
     proxy.stop()
 
     # Tell the user the proxy has stopped
-    input("\nThe proxy has stopped, press enter to return ")
+    input("\nThe proxy has stopped, press enter to return.")
 
     # Exit the program
     sys.exit(0)
 
 except KeyboardInterrupt:
-    proxy.stop();
-    print("");
-    sys.exit(0);
+    proxy.stop()
+    print()
+    sys.exit(0)

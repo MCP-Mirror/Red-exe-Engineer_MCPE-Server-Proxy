@@ -152,7 +152,28 @@ class Proxy:
 
                 # Assign data and addrress
                 data, addr = self.__socket.recvfrom(4096)
-
+                
+                
+                # Tests if the packet is the ID_UNCONNECTED_PING_OPEN_CONNECTIONS packet.
+                if data[0:1] == b"\x1c":
+                    
+                    # Adds " (Proxy)" to the server name
+                    data = data.replace(
+                        
+                        # Replaces the packet length identifier with the incremented version
+                        data[33:35],
+                        
+                        # Packs the identifier into the binary form
+                        struct.pack(
+                            
+                            # Unpacks and increments the length identifier by 8 (the length of " (Proxy)")
+                            "!h", struct.unpack("!h", data[33:35])[0] + 8
+                        ),
+                    )
+                    
+                    # Appends " (Proxy)" to the end of the server name
+                    data += b" (Proxy)"
+                    
                 # Check if addr is equal to scr addr
                 if addr == src_addr:
 

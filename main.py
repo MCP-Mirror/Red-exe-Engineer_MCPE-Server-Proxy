@@ -32,6 +32,7 @@ address = {
 
 # Imports
 import sys
+import struct
 import socket
 import threading
 from time import sleep
@@ -47,13 +48,16 @@ def inputThread():
 
     # Tell the user to press enter to stop the proxy and use BOLD text to tell the to not stop the program while the proxy is running
     # Doing so will cause the port to be taken up and you will need to kill the process.
-    input("\nPress enter to stop the proxy\nDo \033[37;40;1mNOT\033[37;40;0m stop the program ")
+    input(
+        "\nPress enter to stop the proxy\nDo \033[37;40;1mNOT\033[37;40;0m stop the program "
+    )
 
     # Assign False to run
     run = False
 
     # Return none
     return None
+
 
 # Big brain stuff
 class Proxy:
@@ -62,11 +66,7 @@ class Proxy:
     def __init__(self):
 
         # Set the options
-        self.__options = {
-            "src_addr": None,
-            "src_port": 19132,
-            "dst_port": 19133
-        }
+        self.__options = {"src_addr": None, "src_port": 19132, "dst_port": 19133}
 
         # Prepares to lock the thread
         self.__running_lock = threading.Lock()
@@ -126,10 +126,12 @@ class Proxy:
         src_addr = (proc_addr, self.__options["src_port"])
 
         # Set client address to None
-        client_addr = None 
+        client_addr = None
 
         # Sets up the socket and connects it to the server.
-        self.__socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+        self.__socket = socket.socket(
+            socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP
+        )
         self.__socket.bind(dst_addr)
         self.__socket.setblocking(False)
 
@@ -152,28 +154,25 @@ class Proxy:
 
                 # Assign data and addrress
                 data, addr = self.__socket.recvfrom(4096)
-                
-                
+
                 # Tests if the packet is the ID_UNCONNECTED_PING_OPEN_CONNECTIONS packet.
                 if data[0:1] == b"\x1c":
-                    
+
                     # Adds " (Proxy)" to the server name
                     data = data.replace(
-                        
                         # Replaces the packet length identifier with the incremented version
                         data[33:35],
-                        
                         # Packs the identifier into the binary form
                         struct.pack(
-                            
                             # Unpacks and increments the length identifier by 8 (the length of " (Proxy)")
-                            "!h", struct.unpack("!h", data[33:35])[0] + 8
+                            "!h",
+                            struct.unpack("!h", data[33:35])[0] + 8,
                         ),
                     )
-                    
+
                     # Appends " (Proxy)" to the end of the server name
                     data += b" (Proxy)"
-                    
+
                 # Check if addr is equal to scr addr
                 if addr == src_addr:
 
@@ -215,6 +214,7 @@ class Proxy:
         # Return
         return 0
 
+
 # Check if the IP is None
 if address["ip"] == "example.tk":
 
@@ -254,7 +254,7 @@ if preset == False:
     # Set addresses to some inputed data
     address = {
         "ip": input("\nServer address: "),
-        "port": input("Port (leave blank for default): ")
+        "port": input("Port (leave blank for default): "),
     }
 
     # Print a blank line
@@ -262,17 +262,12 @@ if preset == False:
 
     # Check if the port is empty
     if address["port"] == "":
-        
+
         # Set the port to 19132 (default)
         address["port"] = "19132"
 
 # Set args to address' vaules
-args = [
-    address["ip"],
-    address["ip"],
-    address["port"],
-    address["port"]
-]
+args = [address["ip"], address["ip"], address["port"], address["port"]]
 
 proxy = Proxy()
 proxy.set_option("src_addr", args[1])
@@ -284,7 +279,13 @@ if len(args) > 3:
     proxy.set_option("dst_port", int(args[3]))
     options = proxy.get_options()
 
-print(options["src_addr"] + ":" + str(options["src_port"]) + " --> 0.0.0.0:" + str(options["dst_port"]))
+print(
+    options["src_addr"]
+    + ":"
+    + str(options["src_port"])
+    + " --> 0.0.0.0:"
+    + str(options["dst_port"])
+)
 
 # Assign the inputThread to a variable
 wait = threading.Thread(target=inputThread)
